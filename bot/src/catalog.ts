@@ -12,10 +12,19 @@ function puntaje(curso: Curso, consulta: string): number {
   let n = 0;
   for (const kw of curso.keywords ?? []) {
     const k = sinTildes(kw);
-    if (k && q.includes(k)) n += 2;
+    if (k.length >= 3 && q.includes(k)) n += 3;
   }
   const nombre = sinTildes(curso.nombre ?? "");
-  if (nombre && q.includes(nombre)) n += 3;
+  if (nombre && q.includes(nombre)) n += 5;
+  const blob = sinTildes(
+    [curso.nombre, curso.modalidad, curso.certificacion, curso.descripcion, curso.publico]
+      .filter(Boolean)
+      .join(" "),
+  );
+  for (const w of q.split(/[^a-z0-9]+/).filter((x) => x.length >= 4)) {
+    if (nombre.includes(w)) n += 4;
+    else if (blob.includes(w)) n += 1;
+  }
   return n;
 }
 
@@ -30,36 +39,46 @@ function recortar(valor: string | null, max = 420): string {
   return t.length <= max ? t : `${t.slice(0, max)}…`;
 }
 
-export function fichaCompleta(curso: Curso): string {
+export function fichaCorta(curso: Curso): string {
   const descuentos = Array.isArray(curso.descuentos)
     ? curso.descuentos.map(String).join(" · ")
     : "";
   return [
     `id: ${curso.id}`,
     `nombre: ${curso.nombre}`,
-    `descripcion: ${recortar(curso.descripcion)}`,
-    `temario: ${recortar(curso.temario, 360)}`,
-    `requisitos: ${recortar(curso.requisitos, 280)}`,
-    `horas: ${curso.horas}`,
     `modalidad: ${curso.modalidad}`,
+    `fecha: ${curso.fecha_inicio}`,
     `horario: ${curso.horario}`,
-    `fecha_inicio: ${curso.fecha_inicio}`,
+    `horas: ${curso.horas}`,
     `precio_publico: ${curso.precio}`,
-    `descuentos_autorizados: ${descuentos || "ninguno"}`,
-    `certificacion: ${recortar(curso.certificacion, 200)}`,
-    `cupos: ${curso.cupos}`,
-    `docente: ${recortar(curso.docente, 120)}`,
-    `publico: ${recortar(curso.publico, 160)}`,
-    `link_inscripcion: ${curso.link_inscripcion}`,
+    `descuentos: ${descuentos || "ninguno"}`,
+    `certificacion: ${recortar(curso.certificacion, 100)}`,
+    `link: ${curso.link_inscripcion}`,
   ].join("\n");
 }
 
-export function tresMasRelevantes(cursos: Curso[], consulta: string): Curso[] {
-  return [...cursos]
+export function fichaCompleta(curso: Curso): string {
+  return fichaCorta(curso);
+}
+
+export function pideListado(consulta: string): boolean {
+  return /qu[eé]\s+cursos|cat[aá]logo|cu[aá]ntos cursos|qu[eé] ofrecen|disponibles|hay cursos/i.test(
+    consulta,
+  );
+}
+
+export function relevantes(cursos: Curso[], consulta: string, max = 2): Curso[] {
+  const ranked = [...cursos]
     .map((c) => ({ c, p: puntaje(c, consulta) }))
-    .sort((a, b) => b.p - a.p)
-    .slice(0, 3)
-    .map((x) => x.c);
+    .sort((a, b) => b.p - a.p);
+  const conPuntos = ranked.filter((x) => x.p > 0).slice(0, max);
+  if (conPuntos.length > 0) return conPuntos.map((x) => x.c);
+  if (pideListado(consulta)) return ranked.slice(0, max).map((x) => x.c);
+  return [];
+}
+
+export function tresMasRelevantes(cursos: Curso[], consulta: string): Curso[] {
+  return relevantes(cursos, consulta, 3);
 }
 
 export function montosAutorizados(cursos: Curso[]): { numeros: number[]; textos: string[] } {
