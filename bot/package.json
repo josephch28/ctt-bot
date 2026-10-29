@@ -4,6 +4,19 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:guards": "tsx src/guards.test.ts",
+    "smoke": "tsx src/smoke.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "grammy": "^1.46.0",
+    "openai": "^7.45.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }
