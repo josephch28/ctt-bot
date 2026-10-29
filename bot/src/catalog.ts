@@ -59,6 +59,39 @@ export function fichaCorta(curso: Curso): string {
   ].join("\n");
 }
 
+export function fichaTelegram(curso: Curso): string {
+  const descuentos = Array.isArray(curso.descuentos)
+    ? curso.descuentos.map(String).join(" · ")
+    : "";
+  return [
+    `**${curso.nombre}**`,
+    `• Modalidad: ${curso.modalidad ?? "—"}`,
+    `• Fechas: ${curso.fecha_inicio ?? "—"}`,
+    curso.horario ? `• Horario: ${curso.horario}` : null,
+    `• Público: ${curso.precio == null ? "no publicado" : `USD ${curso.precio}`}`,
+    descuentos ? `• Descuentos: ${descuentos}` : null,
+    `• Inscripción: ${LINK_INSCRIPCION}`,
+    "¿Te armo más detalle o el registro?",
+  ]
+    .filter((l) => l != null && l !== "")
+    .join("\n");
+}
+
+export function respuestaRespaldo(cursos: Curso[], consulta: string): string {
+  const top = relevantes(cursos, consulta, 1)[0];
+  if (top) return fichaTelegram(top);
+  if (cursos.length === 0) {
+    return "Ahora mismo no hay convocatorias abiertas. ¿Quieres que te avise de otro tema del CTT?";
+  }
+  return (
+    "Hay convocatoria abierta. ¿Cuál te encaja?\n" +
+    cursos
+      .slice(0, 6)
+      .map((c) => `• ${c.nombre}`)
+      .join("\n")
+  );
+}
+
 export function fichaCompleta(curso: Curso): string {
   return fichaCorta(curso);
 }

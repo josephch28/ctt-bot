@@ -11,12 +11,19 @@ import {
   type Conversacion,
   type Curso,
 } from "./db.ts";
-import { fichaCorta, indiceUnaLinea, pideListado, relevantes } from "./catalog.ts";
+import {
+  fichaCorta,
+  indiceUnaLinea,
+  pideListado,
+  relevantes,
+  respuestaRespaldo,
+} from "./catalog.ts";
 import { fijarLinkInscripcion } from "./inscripcion.ts";
 import { cursosVigentes } from "./vigencia.ts";
 import {
   guardiaEntrada,
   guardiaSalida,
+  esTraspasoInventado,
   justificacionHandover,
   limpiarEmpatiaFalsa,
 } from "./guards.ts";
@@ -216,7 +223,11 @@ async function correrTurno(
     });
     salida = { ...salida, reply: fijarLinkInscripcion(filtrada.texto), handover: true };
   } else {
-    salida = { ...salida, reply: limpiarEmpatiaFalsa(filtrada.texto, input.texto) };
+    let reply = limpiarEmpatiaFalsa(filtrada.texto, input.texto);
+    if (!reply || esTraspasoInventado(reply)) {
+      reply = respuestaRespaldo(cursos, input.texto);
+    }
+    salida = { ...salida, reply };
   }
 
   const durante = await leerConversacion(conv.id);

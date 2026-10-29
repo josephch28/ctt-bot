@@ -1,4 +1,5 @@
 import {
+  esTraspasoInventado,
   guardiaEntrada,
   guardiaSalida,
   justificacionHandover,
@@ -43,12 +44,14 @@ ok(!justificacionHandover("Quien da el de python?"), "docente no es handover");
 ok(!justificacionHandover("Quien sta acargo de Linux x"), "typo no es handover");
 ok(justificacionHandover("quiero hablar con una persona"), "pide humano");
 ok(
-  !/frustraci/i.test(
-    limpiarEmpatiaFalsa(
-      "Entiendo la frustración. Te paso la ficha de Linux.\n• Modalidad: Virtual",
-      "Dame mas informacion de linux",
-    ),
-  ),
-  "limpia empatía falsa",
+  limpiarEmpatiaFalsa(
+    "Entiendo que quieras hablar con una persona. Te transfiero a un asesor humano para que te ayude.",
+    "Linux",
+  ) === "",
+  "Linux no restaura el traspaso",
+);
+ok(
+  esTraspasoInventado("Te transfiero a un asesor humano para que te ayude."),
+  "detecta traspaso inventado",
 );
 console.log("guards ok");

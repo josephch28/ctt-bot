@@ -34,7 +34,13 @@ export function justificacionHandover(texto: string): boolean {
 }
 
 const FRASE_FRUSTRADA =
-  /entiendo.{0,80}(frustraci[oó]n|molestia|enojo)|disculpa la espera|te (paso|paso) con un asesor|asesor humano|prefieres hablar con un (asesor|humano)/i;
+  /entiendo.{0,80}(frustraci[oó]n|molestia|enojo|quieras hablar)|disculpa la espera|te (paso|transfiero) con un asesor|asesor humano|hablar con una persona|te conecto|prefieres hablar con un (asesor|humano)/i;
+
+export function esTraspasoInventado(texto: string): boolean {
+  return /transfiero|asesor humano|hablar con una persona|te paso con un asesor|te conecto con alguien/i.test(
+    texto,
+  );
+}
 
 /** Quita disculpas de enojo cuando el usuario no insultó ni pidió persona. */
 export function limpiarEmpatiaFalsa(reply: string, textoUsuario: string): string {
@@ -42,9 +48,9 @@ export function limpiarEmpatiaFalsa(reply: string, textoUsuario: string): string
   const lineas = reply
     .split("\n")
     .filter((l) => l.trim() === "" || !FRASE_FRUSTRADA.test(l));
-  let t = lineas.join("\n").replace(/^\n+/, "").trim();
-  t = t.replace(/^entiendo[^.!?\n]{0,80}(frustraci[oó]n|molestia|enojo)[^.!?\n]*[.!?]\s*/i, "");
-  return t.trim() || reply;
+  const t = lineas.join("\n").replace(/^\n+/, "").trim();
+  if (!t || esTraspasoInventado(t)) return "";
+  return t;
 }
 
 export function guardiaEntrada(texto: string): HallazgoEntrada {
