@@ -1,4 +1,9 @@
-import { guardiaEntrada, guardiaSalida, justificacionHandover } from "./guards.ts";
+import {
+  guardiaEntrada,
+  guardiaSalida,
+  justificacionHandover,
+  limpiarEmpatiaFalsa,
+} from "./guards.ts";
 import type { Curso } from "./db.ts";
 
 const cursos: Curso[] = [
@@ -37,4 +42,13 @@ ok(!guardiaSalida("Te lo dejo gratis", cursos).ok, "bloquea gratuidad");
 ok(!justificacionHandover("Quien da el de python?"), "docente no es handover");
 ok(!justificacionHandover("Quien sta acargo de Linux x"), "typo no es handover");
 ok(justificacionHandover("quiero hablar con una persona"), "pide humano");
+ok(
+  !/frustraci/i.test(
+    limpiarEmpatiaFalsa(
+      "Entiendo la frustración. Te paso la ficha de Linux.\n• Modalidad: Virtual",
+      "Dame mas informacion de linux",
+    ),
+  ),
+  "limpia empatía falsa",
+);
 console.log("guards ok");

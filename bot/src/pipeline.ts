@@ -14,7 +14,12 @@ import {
 import { fichaCorta, indiceUnaLinea, pideListado, relevantes } from "./catalog.ts";
 import { fijarLinkInscripcion } from "./inscripcion.ts";
 import { cursosVigentes } from "./vigencia.ts";
-import { guardiaEntrada, guardiaSalida, justificacionHandover } from "./guards.ts";
+import {
+  guardiaEntrada,
+  guardiaSalida,
+  justificacionHandover,
+  limpiarEmpatiaFalsa,
+} from "./guards.ts";
 import { completarJson, extraerJson } from "./llm.ts";
 import { PROMPT_SISTEMA } from "./prompts.ts";
 
@@ -154,7 +159,13 @@ async function correrTurno(
   const [cursosRaw, faqs, historial] = await Promise.all([
     listarCursosActivos(),
     listarFaqs(),
-    ultimosMensajes(conv.id, 4),
+    ultimosMensajes(conv.id, 4).then((msgs) =>
+      msgs.filter(
+        (m) =>
+          m.role !== "assistant" ||
+          !/frustraci[oó]n|molestia|te conecto con alguien|asesor humano/i.test(m.content ?? ""),
+      ),
+    ),
   ]);
   const cursos = cursosVigentes(cursosRaw);
   const entrada = guardiaEntrada(input.texto);
@@ -205,7 +216,7 @@ async function correrTurno(
     });
     salida = { ...salida, reply: fijarLinkInscripcion(filtrada.texto), handover: true };
   } else {
-    salida = { ...salida, reply: filtrada.texto };
+    salida = { ...salida, reply: limpiarEmpatiaFalsa(filtrada.texto, input.texto) };
   }
 
   const durante = await leerConversacion(conv.id);

@@ -33,6 +33,20 @@ export function justificacionHandover(texto: string): boolean {
   return pideOperador(texto) || hayInsulto(texto);
 }
 
+const FRASE_FRUSTRADA =
+  /entiendo.{0,80}(frustraci[oó]n|molestia|enojo)|disculpa la espera|te (paso|paso) con un asesor|asesor humano|prefieres hablar con un (asesor|humano)/i;
+
+/** Quita disculpas de enojo cuando el usuario no insultó ni pidió persona. */
+export function limpiarEmpatiaFalsa(reply: string, textoUsuario: string): string {
+  if (justificacionHandover(textoUsuario)) return reply;
+  const lineas = reply
+    .split("\n")
+    .filter((l) => l.trim() === "" || !FRASE_FRUSTRADA.test(l));
+  let t = lineas.join("\n").replace(/^\n+/, "").trim();
+  t = t.replace(/^entiendo[^.!?\n]{0,80}(frustraci[oó]n|molestia|enojo)[^.!?\n]*[.!?]\s*/i, "");
+  return t.trim() || reply;
+}
+
 export function guardiaEntrada(texto: string): HallazgoEntrada {
   for (const p of PATRONES_ENTRADA) {
     if (p.re.test(texto)) return { alerta: true, motivo: p.motivo };
