@@ -6,6 +6,18 @@
     "scrape": "tsx src/scrape.ts",
     "normalize": "tsx src/normalize.ts",
     "seed": "tsx src/seed.ts",
+    "resumen": "tsx src/resumen.ts",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "cheerio": "^1.2.0",
+    "openai": "^7.45.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }
