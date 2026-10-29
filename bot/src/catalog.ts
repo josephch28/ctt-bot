@@ -24,6 +24,12 @@ export function indiceUnaLinea(curso: Curso): string {
   return `${curso.id} | ${curso.nombre ?? "sin nombre"} | ${curso.modalidad ?? "?"} | ${curso.fecha_inicio ?? "?"} | ${precio}`;
 }
 
+function recortar(valor: string | null, max = 420): string {
+  if (!valor) return "";
+  const t = valor.replace(/\s+/g, " ").trim();
+  return t.length <= max ? t : `${t.slice(0, max)}…`;
+}
+
 export function fichaCompleta(curso: Curso): string {
   const descuentos = Array.isArray(curso.descuentos)
     ? curso.descuentos.map(String).join(" · ")
@@ -31,19 +37,19 @@ export function fichaCompleta(curso: Curso): string {
   return [
     `id: ${curso.id}`,
     `nombre: ${curso.nombre}`,
-    `descripcion: ${curso.descripcion}`,
-    `temario: ${curso.temario}`,
-    `requisitos: ${curso.requisitos}`,
+    `descripcion: ${recortar(curso.descripcion)}`,
+    `temario: ${recortar(curso.temario, 360)}`,
+    `requisitos: ${recortar(curso.requisitos, 280)}`,
     `horas: ${curso.horas}`,
     `modalidad: ${curso.modalidad}`,
     `horario: ${curso.horario}`,
     `fecha_inicio: ${curso.fecha_inicio}`,
     `precio_publico: ${curso.precio}`,
     `descuentos_autorizados: ${descuentos || "ninguno"}`,
-    `certificacion: ${curso.certificacion}`,
+    `certificacion: ${recortar(curso.certificacion, 200)}`,
     `cupos: ${curso.cupos}`,
-    `docente: ${curso.docente}`,
-    `publico: ${curso.publico}`,
+    `docente: ${recortar(curso.docente, 120)}`,
+    `publico: ${recortar(curso.publico, 160)}`,
     `link_inscripcion: ${curso.link_inscripcion}`,
   ].join("\n");
 }

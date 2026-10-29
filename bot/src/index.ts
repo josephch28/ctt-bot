@@ -1,6 +1,7 @@
 import { cargarEnv } from "./cargar-env.ts";
 import { crearBotTelegram } from "./channels/telegram.ts";
 import { listarCursosActivos } from "./db.ts";
+import { modeloLlm } from "./llm.ts";
 import { escucharOperador } from "./operator.ts";
 import { cursosVigentes } from "./vigencia.ts";
 
@@ -9,7 +10,7 @@ async function main(): Promise<void> {
   const cursos = await listarCursosActivos();
   const vigentes = cursosVigentes(cursos);
   console.log(
-    `Catálogo: ${cursos.length} activos en base, ${vigentes.length} abiertos a inscripción.`,
+    `Catálogo: ${cursos.length} activos en base, ${vigentes.length} abiertos a inscripción. LLM: ${modeloLlm()}`,
   );
   const bot = crearBotTelegram();
   const me = await bot.api.getMe();

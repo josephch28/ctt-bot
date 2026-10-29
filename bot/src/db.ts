@@ -143,19 +143,30 @@ export async function actualizarConversacion(
   if (error) throw new Error(error.message);
 }
 
+const ttlCatalogoMs = 90_000;
+let cacheCursos: { t: number; data: Curso[] } | null = null;
+let cacheFaqs: { t: number; data: { pregunta: string; respuesta: string }[] } | null =
+  null;
+
 export async function listarCursosActivos(): Promise<Curso[]> {
+  if (cacheCursos && Date.now() - cacheCursos.t < ttlCatalogoMs) return cacheCursos.data;
   const { data, error } = await supabase()
     .from("courses")
     .select("*")
     .eq("activo", true);
   if (error) throw new Error(error.message);
-  return (data ?? []) as Curso[];
+  const filas = (data ?? []) as Curso[];
+  cacheCursos = { t: Date.now(), data: filas };
+  return filas;
 }
 
 export async function listarFaqs(): Promise<{ pregunta: string; respuesta: string }[]> {
+  if (cacheFaqs && Date.now() - cacheFaqs.t < ttlCatalogoMs) return cacheFaqs.data;
   const { data, error } = await supabase().from("faqs").select("pregunta, respuesta");
   if (error) throw new Error(error.message);
-  return (data ?? []) as { pregunta: string; respuesta: string }[];
+  const filas = (data ?? []) as { pregunta: string; respuesta: string }[];
+  cacheFaqs = { t: Date.now(), data: filas };
+  return filas;
 }
 
 export async function reclamarMensajeOperador(id: number): Promise<Mensaje | null> {
