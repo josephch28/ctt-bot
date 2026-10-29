@@ -1,5 +1,6 @@
 import { Bot } from "grammy";
 import type { ChannelAdapter } from "./types.ts";
+import { actualizarConversacion, upsertConversacion } from "../db.ts";
 import { procesarTurno } from "../pipeline.ts";
 import { sttConfigurado, transcribirAudio } from "../voice.ts";
 
@@ -9,7 +10,18 @@ export function crearBotTelegram(): Bot {
   const bot = new Bot(token);
   const adapter = adaptadorTelegram(bot);
 
+  bot.catch((err) => {
+    console.error("Error en Telegram:", err.error ?? err);
+  });
+
   bot.command("start", async (ctx) => {
+    const conv = await upsertConversacion({
+      channel: "telegram",
+      externalId: String(ctx.chat.id),
+      nombre: ctx.from?.first_name ?? null,
+      username: ctx.from?.username ?? null,
+    });
+    await actualizarConversacion(conv.id, { mode: "ai" });
     const nombre = ctx.from?.first_name ?? "tú";
     await ctx.reply(
       [

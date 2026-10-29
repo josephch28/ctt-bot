@@ -83,7 +83,14 @@ async function ejecutarTurno(input: {
   });
 
   const actual = await leerConversacion(conv.id);
-  if (actual.mode === "human") return;
+  if (actual.mode === "human") {
+    console.log(`Chat ${conv.id} en modo humano: Abeja no responde.`);
+    await input.adapter.send(
+      input.externalId,
+      "Este chat está con un asesor de Colmena. Escribe /start para volver con Abeja.",
+    );
+    return;
+  }
 
   const cursos = cursosVigentes(await listarCursosActivos());
   const faqs = await listarFaqs();
