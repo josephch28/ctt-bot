@@ -6,6 +6,7 @@
     "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "test:guards": "tsx src/guards.test.ts",
+    "test:vigencia": "tsx src/vigencia.test.ts",
     "smoke": "tsx src/smoke.ts"
   },
   "dependencies": {

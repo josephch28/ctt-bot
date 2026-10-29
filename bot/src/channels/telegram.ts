@@ -12,7 +12,16 @@ export function crearBotTelegram(): Bot {
   bot.command("start", async (ctx) => {
     const nombre = ctx.from?.first_name ?? "tú";
     await ctx.reply(
-      `Hola ${nombre}, soy Abeja del CTT de la FISEI-UTA. Te ayudo a elegir un curso con datos oficiales del centro. ¿Qué te gustaría aprender?`,
+      [
+        `Hola ${nombre}, soy Abeja del CTT de la FISEI-UTA.`,
+        "",
+        "Te ayudo con las convocatorias que siguen abiertas:",
+        "• catálogo oficial (precios y fechas del sitio)",
+        "• requisitos, horarios y certificación",
+        "• link de inscripción cuando exista",
+        "",
+        "¿Qué te gustaría aprender?",
+      ].join("\n"),
     );
   });
 
@@ -65,7 +74,9 @@ export function adaptadorTelegram(bot: Bot): ChannelAdapter {
   return {
     channel: "telegram",
     async send(externalId, text) {
-      await bot.api.sendMessage(externalId, text);
+      await bot.api.sendMessage(externalId, text, {
+        link_preview_options: { is_disabled: true },
+      });
     },
     async typing(externalId) {
       await bot.api.sendChatAction(externalId, "typing");

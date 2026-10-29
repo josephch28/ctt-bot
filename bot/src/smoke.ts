@@ -22,6 +22,10 @@ async function main(): Promise<void> {
     tipo: "texto",
   });
   if (replies.length === 0) throw new Error("El bot no respondió");
+  const junto = replies.join("\n").toLowerCase();
+  if (junto.includes("2025")) {
+    throw new Error("La respuesta menciona una edición 2025 (debe filtrarse)");
+  }
 }
 
 main().catch((err) => {
