@@ -17,20 +17,48 @@ import { guardiaEntrada, guardiaSalida } from "./guards.ts";
 import { completarJson, extraerJson } from "./llm.ts";
 import { PROMPT_SISTEMA } from "./prompts.ts";
 
+const estados = ["interesado", "dudoso", "frustrado", "lead_caliente"] as const;
+
 const salidaLlm = z.object({
   reply: z.string(),
-  estado: z.enum(["interesado", "dudoso", "frustrado", "lead_caliente"]),
-  intencion: z.string().nullable().optional().transform((v) => v ?? null),
-  handover: z.boolean().optional().transform((v) => v ?? false),
+  estado: z
+    .string()
+    .transform((v) => v.toLowerCase())
+    .pipe(z.enum(estados))
+    .catch("interesado"),
+  intencion: z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => v ?? null),
+  handover: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v) => v === true || v === "true"),
   perfil: z
-    .record(z.string(), z.unknown())
-    .nullable()
+    .union([z.record(z.string(), z.unknown()), z.string(), z.null()])
     .optional()
-    .transform((v) => v ?? null),
+    .transform((v) => {
+      if (v == null) return null;
+      if (typeof v === "string") {
+        try {
+          const p: unknown = JSON.parse(v);
+          if (p && typeof p === "object" && !Array.isArray(p)) {
+            return p as Record<string, unknown>;
+          }
+        } catch {
+          /* texto libre */
+        }
+        return { nota: v };
+      }
+      return v;
+    }),
   curso_id: z
-    .union([z.string().uuid(), z.null()])
+    .union([z.string().uuid(), z.null(), z.literal(""), z.string()])
     .optional()
-    .transform((v) => v ?? null),
+    .transform((v) => {
+      if (!v || v === "null") return null;
+      return z.string().uuid().safeParse(v).success ? v : null;
+    }),
 });
 
 type SalidaLlm = z.infer<typeof salidaLlm>;
