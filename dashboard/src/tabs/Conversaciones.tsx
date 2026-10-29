@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase.ts";
 import { colorEstado, etiquetaEstado, ordenarConversaciones } from "../lib/urgencia.ts";
 import type { Conversacion, Curso, Mensaje } from "../lib/types.ts";
 
-export function Conversaciones() {
+export function Conversaciones({ abrirId }: { abrirId: string | null }) {
   const [lista, setLista] = useState<Conversacion[]>([]);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [ultimos, setUltimos] = useState<Record<string, string>>({});
@@ -49,6 +49,10 @@ export function Conversaciones() {
       void supabase.removeChannel(canal);
     };
   }, []);
+
+  useEffect(() => {
+    if (abrirId) setSel(abrirId);
+  }, [abrirId]);
 
   useEffect(() => {
     if (!sel) return;
@@ -134,7 +138,7 @@ export function Conversaciones() {
               onClick={() => setSel(c.id)}
               className={`flex w-full flex-col gap-1 border-b border-amber-900/40 px-3 py-2 text-left ${
                 sel === c.id ? "bg-amber-900/40" : "hover:bg-amber-950/40"
-              }`}
+              } ${c.estado === "frustrado" ? "ring-1 ring-inset ring-red-600" : ""}`}
             >
               <div className="flex items-center gap-2">
                 <span
@@ -149,6 +153,9 @@ export function Conversaciones() {
                 <span className="rounded-full bg-black/40 px-2 py-0.5">
                   {c.mode === "human" ? "Humano" : "IA"}
                 </span>
+                {c.estado === "frustrado" ? (
+                  <span className="rounded-full bg-red-700 px-2 py-0.5 text-white">Pide operador</span>
+                ) : null}
               </div>
               <p className="truncate text-xs text-amber-500/90">{ultimos[c.id] ?? "—"}</p>
             </button>
