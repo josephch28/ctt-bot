@@ -16,10 +16,11 @@ type Resultado = PromiseLike<{ error: { message: string } | null }>;
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function cliente() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    throw new Error("Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.");
+    throw new Error("Faltan SUPABASE_URL/VITE_SUPABASE_URL o una API key.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }

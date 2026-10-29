@@ -21,7 +21,7 @@ export const cursoNormalizadoSchema = z.object({
   docente: texto,
   link_inscripcion: texto,
   publico: texto,
-  keywords: z.array(z.string()).min(5).max(10),
+  keywords: z.array(z.string()).min(1).max(10),
   url_origen: z.string().url(),
   activo: z.boolean(),
 });

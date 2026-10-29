@@ -2,9 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** Carga .env de la raíz si existe; no pisa variables ya definidas. */
-export function cargarEnv(): void {
-  const ruta = join(dirname(fileURLToPath(import.meta.url)), "../../.env");
+function aplicarArchivo(ruta: string): void {
   if (!existsSync(ruta)) return;
   const texto = readFileSync(ruta, "utf8");
   for (const linea of texto.split(/\r?\n/)) {
@@ -20,6 +18,14 @@ export function cargarEnv(): void {
     ) {
       valor = valor.slice(1, -1);
     }
+    if (valor === "") continue;
     if (process.env[clave] === undefined) process.env[clave] = valor;
   }
+}
+
+/** Carga .env de la raíz y dashboard/.env.local; no pisa variables ya definidas. */
+export function cargarEnv(): void {
+  const raiz = join(dirname(fileURLToPath(import.meta.url)), "../..");
+  aplicarArchivo(join(raiz, ".env"));
+  aplicarArchivo(join(raiz, "dashboard/.env.local"));
 }

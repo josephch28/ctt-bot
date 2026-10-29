@@ -58,6 +58,79 @@ const sistemaFaqs = `Extrae FAQ solo con datos que aparezcan en el texto (pagos,
 JSON: { "faqs": [ { "pregunta": "...", "respuesta": "..." } ] }.
 PROHIBIDO inventar. Si no hay dato, no crees esa pregunta. Español de Ecuador.`;
 
+function numeroONull(valor: unknown): number | null {
+  if (valor === null || valor === undefined || valor === "") return null;
+  if (typeof valor === "number" && Number.isFinite(valor)) return valor;
+  if (typeof valor === "string") {
+    const n = Number(valor.replace(/[^\d,.-]/g, "").replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+function enteroONull(valor: unknown): number | null {
+  const n = numeroONull(valor);
+  return n === null ? null : Math.round(n);
+}
+
+function textoONull(valor: unknown): string | null {
+  if (valor === null || valor === undefined) return null;
+  if (typeof valor === "string") return valor.trim() || null;
+  if (Array.isArray(valor)) {
+    const t = valor
+      .map((v) => (typeof v === "string" ? v : JSON.stringify(v)))
+      .join("\n")
+      .trim();
+    return t || null;
+  }
+  if (typeof valor === "object") return JSON.stringify(valor);
+  return String(valor);
+}
+
+function prepararCurso(raw: unknown, url: string): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const o = { ...(raw as Record<string, unknown>) };
+  for (const clave of [
+    "nombre",
+    "descripcion",
+    "temario",
+    "requisitos",
+    "modalidad",
+    "horario",
+    "fecha_inicio",
+    "certificacion",
+    "docente",
+    "link_inscripcion",
+    "publico",
+  ] as const) {
+    o[clave] = textoONull(o[clave]);
+  }
+  o.precio = numeroONull(o.precio);
+  o.horas = enteroONull(o.horas);
+  if (o.cupos && typeof o.cupos === "object" && "maximo" in o.cupos) {
+    o.cupos = enteroONull((o.cupos as { maximo: unknown }).maximo);
+  } else {
+    o.cupos = enteroONull(o.cupos);
+  }
+  if (!Array.isArray(o.descuentos)) {
+    o.descuentos = o.descuentos == null ? [] : [String(o.descuentos)];
+  } else {
+    o.descuentos = o.descuentos.map((d) =>
+      typeof d === "string" ? d : JSON.stringify(d),
+    );
+  }
+  if (Array.isArray(o.keywords)) {
+    o.keywords = o.keywords
+      .map(String)
+      .map((k) => k.trim())
+      .filter(Boolean)
+      .slice(0, 10);
+  }
+  if (typeof o.activo !== "boolean") o.activo = o.activo !== "false" && o.activo !== 0;
+  o.url_origen = typeof o.url_origen === "string" ? o.url_origen : url;
+  return o;
+}
+
 async function completarJson(
   client: OpenAI,
   system: string,
@@ -80,13 +153,18 @@ async function normalizarCurso(
   client: OpenAI,
   pagina: Pagina,
 ): Promise<CursoNormalizado> {
-  const bruto = await completarJson(
-    client,
-    sistemaCurso,
-    `URL: ${pagina.url}\nTítulo: ${pagina.titulo}\n\n${pagina.texto}`,
-  );
-  const parsed: unknown = JSON.parse(bruto);
-  return cursoNormalizadoSchema.parse(parsed);
+  const user = `URL: ${pagina.url}\nTítulo: ${pagina.titulo}\n\n${pagina.texto}`;
+  let ultimoError: unknown;
+  for (let intento = 0; intento < 2; intento++) {
+    try {
+      const bruto = await completarJson(client, sistemaCurso, user);
+      return cursoNormalizadoSchema.parse(prepararCurso(JSON.parse(bruto), pagina.url));
+    } catch (err) {
+      ultimoError = err;
+      console.warn(`Reintento ${intento + 1} para ${pagina.url}: ${String(err)}`);
+    }
+  }
+  throw ultimoError;
 }
 
 async function extraerFaqs(client: OpenAI, paginas: Pagina[]): Promise<unknown> {
@@ -114,6 +192,7 @@ async function main(): Promise<void> {
   for (const pagina of cursosPaginas) {
     console.log(`Normalizando ${pagina.url}`);
     cursos.push(await normalizarCurso(client, pagina));
+    await new Promise((r) => setTimeout(r, 400));
   }
 
   const contextoFaq = paginas.filter(
