@@ -15,6 +15,11 @@ async function main(): Promise<void> {
   const me = await bot.api.getMe();
   console.log(`Bot @${me.username} listo (long polling).`);
   escucharOperador(bot);
+  const apagar = () => {
+    void bot.stop().finally(() => process.exit(0));
+  };
+  process.once("SIGTERM", apagar);
+  process.once("SIGINT", apagar);
   await bot.start({
     onStart: () => {
       console.log("Long polling activo.");

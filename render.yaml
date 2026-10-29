@@ -1,0 +1,31 @@
+services:
+  - type: worker
+    name: ctt-telegram-bot
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci
+    startCommand: npm run start -w bot
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: LLM_BASE_URL
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: STT_BASE_URL
+        sync: false
+      - key: STT_API_KEY
+        sync: false
+      - key: STT_MODEL
+        sync: false
+      - key: CTT_BASE_URL
+        value: https://ctt-talleresfisei.uta.edu.ec
