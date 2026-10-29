@@ -27,4 +27,8 @@ ok(dobles.includes("<b>Linux Essentials</b>"), "doble asterisco");
 ok(planoSinMarcas("• *Python*").includes("Python"), "plano sin marcas");
 ok(!planoSinMarcas("• *Python*").includes("*"), "plano sin *");
 
+const uta = aHtmlTelegram("Inscríbete en https://ctt-talleresfisei.uta.edu.ec/curso16.php");
+ok(uta.includes("1FAIpQLSeWhh69h-nGZYQvWkFIyR1riMYBOc61CC7YmWL49XBo64I3zA"), "uta vira al form");
+ok(!uta.includes("uta.edu.ec"), "sin enlace uta");
+
 console.log("formato.test.ts ok");

@@ -1,3 +1,5 @@
+import { fijarLinkInscripcion, LINK_INSCRIPCION } from "./inscripcion.ts";
+
 /** Convierte el texto de Abeja a HTML permitido por Telegram. */
 
 export function escaparHtml(texto: string): string {
@@ -15,8 +17,9 @@ function recortarUrl(crudo: string): { url: string; cola: string } {
 }
 
 function etiquetaEnlace(url: string): string {
-  if (/docs\.google\.com\/forms/i.test(url)) return "Formulario de inscripción";
-  if (/uta\.edu\.ec/i.test(url)) return "Sitio del CTT";
+  if (/docs\.google\.com\/forms/i.test(url) || url === LINK_INSCRIPCION) {
+    return "Formulario de inscripción";
+  }
   return "Abrir enlace";
 }
 
@@ -33,7 +36,7 @@ function viñetas(texto: string): string {
 }
 
 export function aHtmlTelegram(bruto: string): string {
-  let t = viñetas(bruto.trim());
+  let t = viñetas(fijarLinkInscripcion(bruto.trim()));
   t = escaparHtml(t);
   t = t.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
   t = t.replace(

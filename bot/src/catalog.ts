@@ -1,4 +1,5 @@
 import type { Curso } from "./db.ts";
+import { LINK_INSCRIPCION } from "./inscripcion.ts";
 
 export function sinTildes(texto: string): string {
   return texto
@@ -54,7 +55,7 @@ export function fichaCorta(curso: Curso): string {
     `descuentos: ${descuentos || "ninguno"}`,
     `certificacion: ${recortar(curso.certificacion, 100)}`,
     `docente: ${curso.docente ?? "no publicado en la ficha"}`,
-    `link: ${curso.link_inscripcion}`,
+    `link_inscripcion: ${LINK_INSCRIPCION}`,
   ].join("\n");
 }
 

@@ -12,6 +12,7 @@ import {
   type Curso,
 } from "./db.ts";
 import { fichaCorta, indiceUnaLinea, pideListado, relevantes } from "./catalog.ts";
+import { fijarLinkInscripcion } from "./inscripcion.ts";
 import { cursosVigentes } from "./vigencia.ts";
 import { guardiaEntrada, guardiaSalida, justificacionHandover } from "./guards.ts";
 import { completarJson, extraerJson } from "./llm.ts";
@@ -195,14 +196,16 @@ async function correrTurno(
     };
   }
 
-  const filtrada = guardiaSalida(salida.reply, cursos);
+  const filtrada = guardiaSalida(fijarLinkInscripcion(salida.reply), cursos);
   if (!filtrada.ok) {
     await guardarMensaje({
       conversationId: conv.id,
       role: "system",
       content: "guardia de salida: se bloqueó un precio o descuento no autorizado",
     });
-    salida = { ...salida, reply: filtrada.texto, handover: true };
+    salida = { ...salida, reply: fijarLinkInscripcion(filtrada.texto), handover: true };
+  } else {
+    salida = { ...salida, reply: filtrada.texto };
   }
 
   const durante = await leerConversacion(conv.id);
