@@ -1,0 +1,11 @@
+{
+  "name": "scraper",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scrape": "tsx src/scrape.ts",
+    "normalize": "tsx src/normalize.ts",
+    "seed": "tsx src/seed.ts",
+    "typecheck": "tsc --noEmit"
+  }
+}

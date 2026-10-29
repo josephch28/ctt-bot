@@ -1,0 +1,18 @@
+{
+  "name": "ctt-bot",
+  "private": true,
+  "description": "Ecosistema conversacional CTT FISEI-UTA: bot Telegram + scraper + panel Colmena",
+  "workspaces": [
+    "bot",
+    "scraper",
+    "dashboard"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "bot": "npm run start -w bot",
+    "scraper": "npm run scrape -w scraper",
+    "dashboard": "npm run dev -w dashboard"
+  }
+}
