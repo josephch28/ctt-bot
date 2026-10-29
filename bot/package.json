@@ -7,6 +7,7 @@
     "typecheck": "tsc --noEmit",
     "test:guards": "tsx src/guards.test.ts",
     "test:vigencia": "tsx src/vigencia.test.ts",
+    "test:formato": "tsx src/formato.test.ts",
     "smoke": "tsx src/smoke.ts"
   },
   "dependencies": {

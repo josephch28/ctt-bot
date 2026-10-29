@@ -87,7 +87,7 @@ async function ejecutarTurno(input: {
     console.log(`Chat ${conv.id} en modo humano: Abeja no responde.`);
     await input.adapter.send(
       input.externalId,
-      "Este chat está con un asesor de Colmena. Escribe /start para volver con Abeja.",
+      "Este chat está con un asesor de Colmena.\nEscribe /start para volver con Abeja.",
     );
     return;
   }

@@ -1,6 +1,7 @@
 import { Bot } from "grammy";
 import type { ChannelAdapter } from "./types.ts";
 import { actualizarConversacion, upsertConversacion } from "../db.ts";
+import { aHtmlTelegram, escaparHtml, planoSinMarcas } from "../formato.ts";
 import { procesarTurno } from "../pipeline.ts";
 import { sttConfigurado, transcribirAudio } from "../voice.ts";
 
@@ -25,15 +26,16 @@ export function crearBotTelegram(): Bot {
     const nombre = ctx.from?.first_name ?? "tú";
     await ctx.reply(
       [
-        `Hola ${nombre}, soy Abeja del CTT de la FISEI-UTA.`,
+        `Hola ${escaparHtml(nombre)}, soy <b>Abeja</b> del CTT de la FISEI-UTA.`,
         "",
         "Te ayudo con las convocatorias que siguen abiertas:",
-        "• catálogo oficial (precios y fechas del sitio)",
+        "• catálogo, precios y fechas oficiales",
         "• requisitos, horarios y certificación",
-        "• link de inscripción cuando exista",
+        "• enlace de inscripción cuando exista",
         "",
         "¿Qué te gustaría aprender?",
       ].join("\n"),
+      { parse_mode: "HTML" },
     );
   });
 
@@ -86,9 +88,18 @@ export function adaptadorTelegram(bot: Bot): ChannelAdapter {
   return {
     channel: "telegram",
     async send(externalId, text) {
-      await bot.api.sendMessage(externalId, text, {
-        link_preview_options: { is_disabled: true },
-      });
+      const html = aHtmlTelegram(text);
+      try {
+        await bot.api.sendMessage(externalId, html, {
+          parse_mode: "HTML",
+          link_preview_options: { is_disabled: true },
+        });
+      } catch (err) {
+        console.error("HTML de Telegram rechazado, envío plano:", err);
+        await bot.api.sendMessage(externalId, planoSinMarcas(text), {
+          link_preview_options: { is_disabled: true },
+        });
+      }
     },
     async typing(externalId) {
       await bot.api.sendChatAction(externalId, "typing");
