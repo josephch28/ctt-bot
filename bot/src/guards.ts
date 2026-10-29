@@ -12,6 +12,27 @@ const PATRONES_ENTRADA: { motivo: string; re: RegExp }[] = [
   { motivo: "descuento alto", re: /descuento(s)?\s*(del\s*)?(5\d|6\d|7\d|8\d|9\d|100)\s*%|(\b(50|60|70|80|90|100)\s*%\s*(de )?(dto|descuento))/i },
 ];
 
+/** Handover real: piden persona o insultan. Preguntas (quién da el curso, typos) no cuentan. */
+export function pideOperador(texto: string): boolean {
+  return /hablar con (una )?persona|pasar(me)? con (un )?(humano|asesor|operador)|quiero (un )?humano|atend[ae](rme)? (un )?humano|un operador/i.test(
+    texto,
+  );
+}
+
+export function hayInsulto(texto: string): boolean {
+  return /idiota|est[uú]pid[oa]|in[uú]til|basura|mierda|odio (este|el) bot|vete a/i.test(texto);
+}
+
+export function consultaNormal(texto: string): boolean {
+  return /qui[eé]n|quien|docente|profesor|imparte|a cargo|encargad|horario|precio|cuesta|certif|inscrip|modalidad|virtual|python|linux|arduino|github|ccna|curso/i.test(
+    texto,
+  );
+}
+
+export function justificacionHandover(texto: string): boolean {
+  return pideOperador(texto) || hayInsulto(texto);
+}
+
 export function guardiaEntrada(texto: string): HallazgoEntrada {
   for (const p of PATRONES_ENTRADA) {
     if (p.re.test(texto)) return { alerta: true, motivo: p.motivo };

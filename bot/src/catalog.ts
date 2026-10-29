@@ -53,6 +53,7 @@ export function fichaCorta(curso: Curso): string {
     `precio_publico: ${curso.precio}`,
     `descuentos: ${descuentos || "ninguno"}`,
     `certificacion: ${recortar(curso.certificacion, 100)}`,
+    `docente: ${curso.docente ?? "no publicado en la ficha"}`,
     `link: ${curso.link_inscripcion}`,
   ].join("\n");
 }

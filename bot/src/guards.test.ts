@@ -1,4 +1,4 @@
-import { guardiaEntrada, guardiaSalida } from "./guards.ts";
+import { guardiaEntrada, guardiaSalida, justificacionHandover } from "./guards.ts";
 import type { Curso } from "./db.ts";
 
 const cursos: Curso[] = [
@@ -34,4 +34,7 @@ ok(guardiaEntrada("quiero python").alerta === false, "entrada normal");
 ok(!guardiaSalida("El público paga $999", cursos).ok, "bloquea precio inventado");
 ok(guardiaSalida("El público paga $60", cursos).ok, "permite precio real");
 ok(!guardiaSalida("Te lo dejo gratis", cursos).ok, "bloquea gratuidad");
+ok(!justificacionHandover("Quien da el de python?"), "docente no es handover");
+ok(!justificacionHandover("Quien sta acargo de Linux x"), "typo no es handover");
+ok(justificacionHandover("quiero hablar con una persona"), "pide humano");
 console.log("guards ok");

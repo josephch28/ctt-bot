@@ -13,7 +13,7 @@ import {
 } from "./db.ts";
 import { fichaCorta, indiceUnaLinea, pideListado, relevantes } from "./catalog.ts";
 import { cursosVigentes } from "./vigencia.ts";
-import { guardiaEntrada, guardiaSalida } from "./guards.ts";
+import { guardiaEntrada, guardiaSalida, justificacionHandover } from "./guards.ts";
 import { completarJson, extraerJson } from "./llm.ts";
 import { PROMPT_SISTEMA } from "./prompts.ts";
 
@@ -187,6 +187,14 @@ async function correrTurno(
 
   if (salida.curso_id && !ids.has(salida.curso_id)) salida = { ...salida, curso_id: null };
 
+  if (!justificacionHandover(input.texto)) {
+    salida = {
+      ...salida,
+      handover: false,
+      estado: salida.estado === "frustrado" ? "interesado" : salida.estado,
+    };
+  }
+
   const filtrada = guardiaSalida(salida.reply, cursos);
   if (!filtrada.ok) {
     await guardarMensaje({
@@ -200,7 +208,10 @@ async function correrTurno(
   const durante = await leerConversacion(conv.id);
   if (durante.mode === "human") return;
 
-  const handover = salida.handover || salida.estado === "frustrado";
+  const handover = justificacionHandover(input.texto);
+  if (handover) {
+    salida = { ...salida, handover: true, estado: "frustrado" };
+  }
   await input.adapter.send(input.externalId, salida.reply);
   await guardarMensaje({
     conversationId: conv.id,
